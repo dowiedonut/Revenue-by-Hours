@@ -1,46 +1,380 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Spin the Hive | Team Edition</title><style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;background:#101f36;color:#fff6df}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 30% 10%,#314a6a,#101f36 70%);min-height:100vh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}main{max-width:1200px;margin:auto;padding:26px 24px 70px}h1{margin:0;font-size:clamp(32px,5vw,60px)}.sub{color:#e8d5a7;margin:7px 0 24px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.tag{background:#ffcb58;color:#372807;padding:10px 15px;border-radius:50px;font-weight:800}.panels{display:grid;grid-template-columns:1fr 1fr;gap:22px}.panel{border:1px solid #526987;border-radius:22px;background:#1a2e49;padding:20px;min-width:0}.panel h2{margin:0 0 8px;font-size:24px}.helper{color:#c6d1dc;min-height:42px}.stage{display:grid;place-items:center;position:relative;margin:12px auto 18px;max-width:430px}.stage canvas{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 25px #0005)}.pointer{position:absolute;z-index:2;top:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:34px solid #fff;filter:drop-shadow(0 2px 3px #0007)}button{cursor:pointer;background:#ffcc5c;color:#2b260d;border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:800;transition:transform .1s,opacity .15s}button:hover:not(:disabled){transform:translateY(-2px)}button:disabled{opacity:.42;cursor:not-allowed}.secondary{background:#314961;color:#fff;border:1px solid #6d8298}.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.result{margin-top:13px;padding:14px;border-radius:13px;background:#0f233c;border:1px solid #4e6683;text-align:center;min-height:83px;display:flex;align-items:center;justify-content:center;flex-direction:column}.result strong{font-size:clamp(20px,2.3vw,30px);color:#ffdc7a}.result small{color:#c8d3e0}.question{font-size:18px;line-height:1.5}.footer{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.box{border:1px solid #536985;background:#1a2e49;padding:19px;border-radius:17px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{background:#2b435f;border-radius:30px;padding:7px 11px;font-size:13px}.chip.done{background:#347261}.status{color:#ffdc7a;font-size:14px}.mini{font-size:13px;color:#b8c8d8}label{display:block;color:#d4deea;margin:10px 0 5px}textarea{width:100%;min-height:112px;background:#0d2036;color:white;border:1px solid #5e7793;border-radius:10px;padding:10px;font:inherit}.hidden{display:none}details summary{cursor:pointer;color:#ffda76;font-weight:700;margin-top:14px} .score{display:grid;gap:8px;margin-top:10px}.scoreRow{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:7px 11px;background:#243d59;border-radius:9px}.scoreRow button{padding:4px 10px;font-size:13px}.scoreControls{display:flex;align-items:center;gap:8px} .notice{color:#ffe4a6;font-size:14px;margin-top:10px} @media(max-width:850px){.panels,.footer{grid-template-columns:1fr}main{padding:18px 12px}.panel{padding:14px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}</style></head><body><main>
-<div class="top"><div><h1>🐝 Spin the Hive 👑</h1><p class="sub">Queen Bee Role Workshop · Team Game</p></div><span class="tag">20 Busy Bees · 2 Wheels</span></div>
-<div class="panels"><section class="panel"><h2>1 · Who's the Lucky Bee?</h2><div class="helper">Spin to choose a teammate. Each name is selected only once per round.</div><div class="stage"><span class="pointer"></span><canvas id="namesWheel" width="720" height="720" aria-label="Team name wheel"></canvas></div><div class="actions"><button id="spinName">🐝 Spin for a Name</button><button id="resetNames" class="secondary">↺ Reset Names</button></div><div class="result" aria-live="polite"><small>Selected teammate</small><strong id="person">Ready to buzz?</strong></div><p class="status" id="nameStatus"></p></section>
-<section class="panel"><h2>2 · What's the Challenge?</h2><div class="helper">Once a name is chosen, spin for a workshop prompt. If the group gets stuck, hit Respin for a new one. Questions can repeat across teammates.</div><div class="stage"><span class="pointer"></span><canvas id="questionsWheel" width="720" height="720" aria-label="Challenge category wheel"></canvas></div><div class="actions"><button id="spinQuestion" disabled>👑 Spin for a Challenge</button><button id="passQuestion" class="secondary" disabled>🔄 Can't Answer, Respin</button><button id="nextTurn" class="secondary" disabled>✓ Finish Turn</button></div><div class="result" aria-live="polite"><small id="categoryLabel">Mystery challenge</small><strong id="questionResult" class="question">Choose a teammate first!</strong></div><p class="status" id="turnStatus">Everyone gets a chance to share.</p></section></div>
-<div class="footer"><section class="box"><h2 style="margin:0">🍯 Team Participation</h2><p class="mini">Green check means they completed a turn. Click + or − to optionally award honey points for thoughtful answers.</p><p id="progress" class="status"></p><div id="roster" class="score"></div></section><section class="box"><h2 style="margin:0">🎤 Host Controls</h2><p>Suggested flow: spin a name, spin a challenge, discuss (or respin if nobody can answer), finish turn, repeat.</p><div class="actions" style="justify-content:flex-start"><button id="fullScreen" class="secondary">⛶ Full Screen</button><button id="resetAll" class="secondary">↻ Restart Game</button></div><details><summary>Edit team names</summary><label for="namesEditor">One name per line</label><textarea id="namesEditor" spellcheck="false"></textarea><div class="actions" style="justify-content:flex-start;margin-top:9px"><button id="applyNames">Update names and restart</button></div></details><details><summary>How scoring works</summary><p class="mini">Optional: +1 point for explaining a takeaway, +1 for a practical team example. Points are kept during the current game only.</p></details><p class="notice">Designed for live screen sharing. Works offline in your browser. Avoid refreshing during the game, as it resets progress.</p></section></div>
-</main><script>
-const initialNames=['Aakash','Shivanshi','Daljit','Liz','Melissa','Rebecca','Vikas','Mandy','Aayushi','Bhavika','Deepak','Jobin','Muskan','Parth','Parita','Shilpa','Satwinder','Vikrant','Bhanu','Lavin'];
-const prompts=[{title:'Sweet Takeaway 🍯',questions:['What was your biggest takeaway from the workshop?','The queen bee lays about 2,000 eggs a day, never gives an order, and does only that one job her whole life. What does her story teach us about focus?','Which insight from the workshop surprised you most?']},{title:'Protect the Hive 🛡️',questions:['What is one practical way we can protect our Queen Bee Role?','What task or distraction might pull us away from our most important work?','The workshop said when the queen is threatened or removed, the whole colony suffers. What happens to our team when our Queen Bee Role gets neglected?']},{title:'Queen Bee Challenge 👑',questions:['How would you explain the Queen Bee Role to a new teammate, in your own words?','Why is the Queen Bee Role not necessarily the busiest or most glamorous task in the building?','The workshop said the Queen Bee Role is defined by impact, not enjoyment. What does that mean for how you spend your day?']},{title:'Real-Life Scenario 💼',questions:['If you were gone for two to four weeks, what part of your work would the team feel the loss of first?','The workshop’s test step asks, if this task stopped tomorrow, how fast would it hurt and how badly? Pick one of your own tasks and answer that.','Jim never fights a customer dispute, even when he can’t prove he wasn’t at fault, because of his integrity. What is an example of us doing the right thing even when it costs us?']},{title:'Buzzing Questions 🐝',questions:['What question do you still have after watching the workshop?','The speaker said our Queen Bee Role shifted from communication to individually caring about the people we work with. Do you think that is still true today, or has it shifted again?','What would you want leadership to clarify about applying this concept to our team?']},{title:'Make It Stick ✨',questions:['What is one action you will try this week to better protect our Queen Bee Role?','The grandfather’s office never allowed casual clothes or paper cups, because it would undercut the quality they wanted to protect. What is one small standard we should never compromise on?','How would you know our team is making real progress on protecting its Queen Bee Role?']}];
-const palette=['#ffcf58','#e89166','#65b8ad','#7e9cda','#c88dc9','#f2b15c','#87c77b','#e88791'];
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Revenue by Hours Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root {
+    --brand-green: #88bd49; --brand-purple: #53316a; --brand-purple-deep: #3a2149;
+    --surface-1: #fcfcfb; --surface-2: #ffffff; --page-plane: #f4f3f0;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+    --gridline: #e1e0d9; --baseline: #c3c2b7; --border-ring: rgba(11,11,11,0.08);
+    --success-text: #006300; --warn-text: #8a5a00; --bad-text: #b4532a;
+    --shadow-1: 0 1px 2px rgba(20,10,30,0.04), 0 2px 8px rgba(20,10,30,0.05);
+    --shadow-2: 0 4px 10px rgba(20,10,30,0.07), 0 12px 28px rgba(20,10,30,0.09);
+    --m-exp: #53316a; --m-oct: #88bd49; --m-act: #2a78d6; --m-cost: #eb6834;
+    --s-Melissa: #2a78d6; --s-Liz: #eb6834; --s-Becca: #1baf7a; --s-Vikas: #eda100; --s-Michelle: #e87ba4; --s-Simplified: #4a3aa7; --s-Shilpa: #0e8f99;
+    --tip-bg: #0b0b0b; --tip-fg: #fcfcfb; --chip-bg: rgba(83,49,106,0.10); --chip-fg: #53316a; --active-pill: #53316a;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    color-scheme: dark; --surface-1: #1a1a19; --surface-2: #212120; --page-plane: #0d0d0d;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781; --gridline: #2c2c2a; --baseline: #383835;
+    --border-ring: rgba(255,255,255,0.09); --success-text: #0ca30c; --warn-text: #fab219; --bad-text: #f08a5d;
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.3), 0 2px 10px rgba(0,0,0,0.35); --shadow-2: 0 6px 16px rgba(0,0,0,0.4), 0 16px 32px rgba(0,0,0,0.45);
+    --m-exp: #9a6fbd; --m-oct: #88bd49; --m-act: #3987e5; --m-cost: #d95926;
+    --s-Melissa: #3987e5; --s-Liz: #d95926; --s-Becca: #199e70; --s-Vikas: #c98500; --s-Michelle: #d55181; --s-Simplified: #9085e9; --s-Shilpa: #2bb3bd;
+    --tip-bg: #ffffff; --tip-fg: #0b0b0b; --chip-bg: rgba(136,189,73,0.15); --chip-fg: #88bd49; --active-pill: #7a4f98;
+  } }
+  :root[data-theme="dark"] {
+    color-scheme: dark; --surface-1: #1a1a19; --surface-2: #212120; --page-plane: #0d0d0d;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781; --gridline: #2c2c2a; --baseline: #383835;
+    --border-ring: rgba(255,255,255,0.09); --success-text: #0ca30c; --warn-text: #fab219; --bad-text: #f08a5d;
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.3), 0 2px 10px rgba(0,0,0,0.35); --shadow-2: 0 6px 16px rgba(0,0,0,0.4), 0 16px 32px rgba(0,0,0,0.45);
+    --m-exp: #9a6fbd; --m-oct: #88bd49; --m-act: #3987e5; --m-cost: #d95926;
+    --s-Melissa: #3987e5; --s-Liz: #d95926; --s-Becca: #199e70; --s-Vikas: #c98500; --s-Michelle: #d55181; --s-Simplified: #9085e9; --s-Shilpa: #2bb3bd;
+    --tip-bg: #ffffff; --tip-fg: #0b0b0b; --chip-bg: rgba(136,189,73,0.15); --chip-fg: #88bd49; --active-pill: #7a4f98;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--page-plane); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header.top { position: relative; overflow: hidden; background: linear-gradient(135deg, #53316a 0%, #3a2149 100%); color: #fff; padding: 26px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; box-shadow: var(--shadow-2); }
+  header.top::before { content: ''; position: absolute; right: -60px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(136,189,73,0.28), transparent 70%); }
+  header.top .htext { position: relative; z-index: 1; min-width: 0; }
+  header.top h1 { font-size: 21px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
+  header.top p { margin: 0; font-size: 13px; color: #e5dcee; }
+  .test-pill { position: relative; z-index: 1; background: rgba(250,178,25,0.22); border: 1px solid rgba(250,178,25,0.6); color: #ffe2a3; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; letter-spacing: .03em; }
+  .theme-toggle { position: relative; z-index: 1; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 7px; padding: 7px 13px; font-size: 13px; cursor: pointer; }
+  .hright { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .accent-bar { height: 4px; background: linear-gradient(90deg, #88bd49, #b6d98c); border-radius: 0 0 10px 10px; margin-bottom: 18px; }
+  .toc-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--page-plane); padding: 10px 0; margin: 0 0 18px; border-bottom: 1px solid var(--gridline); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--page-plane); }
+  .toc-inner { display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none; }
+  .tlabel { font-size: 12px; color: var(--text-muted); margin-right: 4px; flex: none; }
+  .toc-link { flex: none; background: var(--surface-1); border: 1px solid var(--border-ring); color: var(--text-secondary); border-radius: 7px; padding: 5px 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; }
+  .toc-link:hover, .toc-link:focus-visible { border-color: var(--brand-green); color: var(--text-primary); }
+  section { scroll-margin-top: 64px; }
+  .info-banner { background: var(--surface-1); border: 1px solid var(--border-ring); border-left: 4px solid var(--brand-green); border-radius: 8px; padding: 12px 16px; font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px; box-shadow: var(--shadow-1); line-height: 1.5; }
+  .info-banner strong { color: var(--text-primary); }
+  h2.section-title { font-size: 15px; font-weight: 700; margin: 34px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--brand-green); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  h2.section-title .sub { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border-ring); border-radius: 12px; padding: 17px 19px; box-shadow: var(--shadow-1); min-width: 0; }
+  .tile .label { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 7px; }
+  .tile .value { font-size: 27px; font-weight: 650; line-height: 1.15; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .tile .delta { font-size: 12.5px; margin-top: 5px; color: var(--text-muted); }
+  .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+  .silo-card { background: var(--surface-1); border: 1px solid var(--border-ring); border-radius: 12px; padding: 16px 16px 14px; box-shadow: var(--shadow-1); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; text-align: left; color: inherit; font: inherit; width: 100%; }
+  .silo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+  .silo-card:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+  .silo-card.total-card { background: var(--surface-2); border: 1px dashed var(--baseline); }
+  .silo-card .name { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+  .silo-card .role { font-size: 11px; color: var(--text-muted); margin: 2px 0 10px 16px; }
+  .gauge-row { display: flex; align-items: center; gap: 12px; }
+  .gtext { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
+  .silo-card .rev { font-size: 12.5px; color: var(--text-secondary); margin-top: 10px; line-height: 1.6; }
+  .silo-card .rev b { color: var(--text-primary); font-weight: 650; font-variant-numeric: tabular-nums; }
+  .card { background: var(--surface-1); border: 1px solid var(--border-ring); border-radius: 12px; padding: 19px 21px 15px; margin-bottom: 18px; box-shadow: var(--shadow-1); min-width: 0; }
+  .card-head h3 { font-size: 14px; margin: 0; font-weight: 700; }
+  .card-head p.note { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.5; max-width: 80ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0 4px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .axis-label { fill: var(--text-muted); font-size: 11px; }
+  .grid-line { stroke: var(--gridline); stroke-width: 1; }
+  .bar-label { fill: var(--text-secondary); font-size: 11px; }
+  .cat-label { fill: var(--text-primary); font-size: 12px; }
+  .tooltip { position: absolute; pointer-events: none; z-index: 5; background: var(--tip-bg); color: var(--tip-fg); font-size: 12px; padding: 7px 10px; border-radius: 6px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,0.22); white-space: nowrap; }
+  .tooltip b { display: block; }
+  .chart-total { font-size: 13px; color: var(--text-secondary); margin: 8px 0 2px; padding-top: 8px; border-top: 1px solid var(--gridline); }
+  .chart-total b { color: var(--text-primary); }
+  .scroll { overflow-x: auto; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th, table.data-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--gridline); white-space: nowrap; }
+  table.data-table th { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+  table.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.data-table tr.total-row td { font-weight: 650; border-top: 2px solid var(--baseline); border-bottom: none; }
+  table.data-table td.math { color: var(--text-muted); font-size: 12px; }
+  .view-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; align-items: center; }
+  .vlabel { font-size: 12px; color: var(--text-muted); margin-right: 4px; }
+  .view-tab { background: var(--surface-1); border: 1px solid var(--border-ring); color: var(--text-secondary); border-radius: 20px; padding: 5px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .view-tab:hover, .view-tab:focus-visible { border-color: var(--brand-purple); color: var(--text-primary); }
+  .view-tab[aria-pressed="true"] { background: var(--active-pill); border-color: var(--active-pill); color: #fff; }
+  .step { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; }
+  .step .n { width: 24px; height: 24px; border-radius: 7px; background: var(--chip-bg); color: var(--chip-fg); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .rate-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 10px; }
+  .rate { background: var(--surface-2); border: 1px solid var(--border-ring); border-radius: 8px; padding: 10px 12px; }
+  .rate .l { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .rate .v { font-size: 17px; font-weight: 650; margin-top: 2px; }
+  .rate .s { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .sentence { font-size: 14px; line-height: 1.6; margin: 12px 0 2px; }
+  .sentence b { font-variant-numeric: tabular-nums; }
+  .pct-good { color: var(--success-text); font-weight: 650; } .pct-mid { color: var(--warn-text); font-weight: 650; } .pct-low { color: var(--bad-text); font-weight: 650; }
+  footer { margin-top: 30px; font-size: 12px; color: var(--text-muted); text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .silo-card { transition: none; } .silo-card:hover { transform: none; } }
+</style>
+<div class="wrap">
+  <header class="top">
+    <div class="htext">
+      <h1>Revenue by Hours, October 2026</h1>
+      <p>What each silo's hours are worth at bill rates, compared with what it actually billed and what it cost</p>
+    </div>
+    <div class="hright">
+      <span class="test-pill">TEST SCENARIO</span>
+      <button class="theme-toggle" id="themeToggle" type="button">Dark mode</button>
+    </div>
+  </header>
+  <div class="accent-bar"></div>
 
-let names=[...initialNames];
-let pool=[...names];            // names still eligible to be spun; only shrinks once a turn is truly finished
-let completed=new Set();
-let points={};
-let current=null;               // name just landed on, pending "Finish Turn"
-let questionReady=false;
-let busy=false;
-let spinA=0,spinB=0;
+  <nav class="toc-bar" aria-label="Jump to section">
+    <div class="toc-inner">
+      <span class="tlabel">Jump to</span>
+      <a class="toc-link" href="#overview">Silo overview</a>
+      <a class="toc-link" href="#company">Company-wide</a>
+      <a class="toc-link" href="#chart">Revenue by silo</a>
+      <a class="toc-link" href="#work">Show the work</a>
+      <a class="toc-link" href="#notes">How it's worked out</a>
+    </div>
+  </nav>
 
-const $=x=>document.getElementById(x);$('namesEditor').value=names.join('\n');
+  <div class="info-banner"><strong>Test only.</strong> Nothing here is in the KPI Tracker. It uses the October 2026 roster and hours, with billable targets of LCAM 70% (88 hrs a month), CAM 90% (145) and Clerk 95% (153), priced at LCAM $225, CAM $190 and Clerk $120 an hour. S+S is left out because its hours aren't tracked.</div>
 
-function wheel(canvas,labels,rot,emptyLabel){const ctx=canvas.getContext('2d'),W=canvas.width,C=W/2,R=W*.455;ctx.clearRect(0,0,W,W);if(!labels.length){ctx.fillStyle='#293c52';ctx.beginPath();ctx.arc(C,C,R,0,Math.PI*2);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 33px sans-serif';ctx.fillText(emptyLabel,C,C);return;}const n=labels.length,arc=2*Math.PI/n;labels.forEach((label,i)=>{const a=-Math.PI/2-arc/2+rot+i*arc;ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,R,a,a+arc);ctx.closePath();ctx.fillStyle=palette[i%palette.length];ctx.fill();ctx.strokeStyle='#142840';ctx.lineWidth=3;ctx.stroke();ctx.save();ctx.translate(C,C);ctx.rotate(a+arc/2);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillStyle='#15283b';const fs=n>15?23:n>10?26:30;ctx.font=`bold ${fs}px system-ui`;let t=label;if(t.length>17)t=t.slice(0,16)+'…';ctx.fillText(t,R-19,0,R*.68);ctx.restore();});ctx.beginPath();ctx.arc(C,C,53,0,Math.PI*2);ctx.fillStyle='#fff8e7';ctx.fill();ctx.lineWidth=8;ctx.strokeStyle='#30445d';ctx.stroke();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 47px sans-serif';ctx.fillStyle='#312916';ctx.fillText('🐝',C,C+2);}
+  <section id="overview">
+    <h2 class="section-title"><span>Silo overview</span><span class="sub">Click a silo to see its work</span></h2>
+    <div class="overview-grid" id="cards"></div>
+  </section>
 
-function paint(){wheel($('namesWheel'),pool,spinA,'All done!');wheel($('questionsWheel'),prompts.map(x=>x.title),spinB,'Challenges');$('spinName').disabled=busy||!!current||!pool.length;$('spinQuestion').disabled=busy||!current||questionReady;$('passQuestion').disabled=busy||!current||!questionReady;$('nextTurn').disabled=busy||!current||!questionReady;$('resetNames').disabled=busy;$('nameStatus').textContent=`${completed.size} of ${names.length} teammates have finished`;renderRoster();}
+  <section id="company">
+    <h2 class="section-title"><span>Company-wide</span><span class="sub">All silos, October 2026</span></h2>
+    <div class="kpi-row" id="tiles"></div>
+  </section>
 
-function renderRoster(){let target=$('roster');target.replaceChildren();$('progress').textContent=`${completed.size} / ${names.length} completed`;names.forEach(n=>{const row=document.createElement('div');row.className='scoreRow';const label=document.createElement('span');label.textContent=(completed.has(n)?'✅ ':'🐝 ')+n;const controls=document.createElement('div');controls.className='scoreControls';const minus=document.createElement('button');minus.textContent='−';minus.className='secondary';minus.title='Remove one point';minus.onclick=()=>{points[n]=Math.max(0,(points[n]||0)-1);renderRoster()};const count=document.createElement('b');count.textContent=(points[n]||0)+' 🍯';const plus=document.createElement('button');plus.textContent='+';plus.title='Add one point';plus.onclick=()=>{points[n]=(points[n]||0)+1;renderRoster()};controls.append(minus,count,plus);row.append(label,controls);target.append(row)})}
+  <section id="chart">
+    <h2 class="section-title"><span>Revenue by silo</span><span class="sub">Three ways to measure it, plus cost</span></h2>
+    <div class="card">
+      <div class="card-head">
+        <h3>Hours at bill rates vs actual revenue and cost</h3>
+        <p class="note">Expected hours at bill rates is what a full month at the billable targets would be worth. October hours at bill rates is what the hours people actually logged on the silo's clients are worth. Actual revenue is what came in. Silo cost is the October Total Dept Cost from the KPI Tracker.</p>
+      </div>
+      <div class="legend">
+        <span class="key"><i class="swatch" style="background:var(--m-exp)"></i>Expected hours at bill rates</span>
+        <span class="key"><i class="swatch" style="background:var(--m-oct)"></i>October hours at bill rates</span>
+        <span class="key"><i class="swatch" style="background:var(--m-act)"></i>Actual October revenue</span>
+        <span class="key"><i class="swatch" style="background:var(--m-cost)"></i>Silo cost</span>
+      </div>
+      <div class="chart" id="barChart"></div>
+      <div class="chart-total" id="chartTotal"></div>
+    </div>
+  </section>
 
-function animate(which,labels,rotation,setRotation,onDone){if(busy||!labels.length)return;busy=true;paint();const idx=Math.floor(Math.random()*labels.length),n=labels.length,arc=2*Math.PI/n;const old=rotation,normalized=((old%(2*Math.PI))+2*Math.PI)%(2*Math.PI);const target=(((-idx*arc)%(2*Math.PI))+2*Math.PI)%(2*Math.PI);const extra=((target-normalized+2*Math.PI)%(2*Math.PI))+2*Math.PI*5;const start=performance.now(),duration=3600;function frame(now){const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,4);setRotation(old+extra*ease);wheel($(which),labels,old+extra*ease,'');if(t<1)requestAnimationFrame(frame);else{setRotation(old+extra);busy=false;onDone(idx);paint()}}requestAnimationFrame(frame)}
+  <section id="work">
+    <h2 class="section-title"><span>Show the work</span><span class="sub" id="workSub"></span></h2>
+    <div class="view-tabs" id="workTabs" role="group" aria-label="Choose silo"><span class="vlabel">Showing</span></div>
 
-// Spin uses the CURRENT pool as the label set for both the random pick and the render,
-// so whatever lands under the pointer is guaranteed to be the picked name.
-$('spinName').onclick=()=>{if(current||!pool.length||busy)return;const labels=[...pool];animate('namesWheel',labels,spinA,v=>spinA=v,i=>{current=labels[i];$('person').textContent=current+' 🎉';$('questionResult').textContent='Ready for your challenge, '+current+'?';$('categoryLabel').textContent='Mystery challenge';$('turnStatus').textContent='Spin the challenge wheel!';questionReady=false})};
+    <div class="card">
+      <div class="step"><span class="n">1</span><h3 style="margin:0;font-size:14px">Bill rates and billable hours by role</h3></div>
+      <div class="rate-row">
+        <div class="rate"><div class="l">LCAM</div><div class="v">$225 / hr</div><div class="s">88 hrs a month: 70% of a 32-hour week</div></div>
+        <div class="rate"><div class="l">CAM</div><div class="v">$190 / hr</div><div class="s">145 hrs a month: 90% of a 40-hour week</div></div>
+        <div class="rate"><div class="l">Clerk</div><div class="v">$120 / hr</div><div class="s">153 hrs a month: 95% of a 40-hour week</div></div>
+        <div class="rate"><div class="l">Own hours kept</div><div class="v">4 people</div><div class="s">Mandy 128, Zee 73, Michelle 40, Shilpa 135</div></div>
+      </div>
+    </div>
 
-function spinChallenge(){if(!current||busy)return;const cats=prompts.map(x=>x.title);animate('questionsWheel',cats,spinB,v=>spinB=v,i=>{const item=prompts[i];const q=item.questions[Math.floor(Math.random()*item.questions.length)];$('categoryLabel').textContent=item.title;$('questionResult').textContent=q;questionReady=true;$('turnStatus').textContent=current+': share your answer, then mark your turn complete.'})}
-$('spinQuestion').onclick=()=>{if(!current||questionReady||busy)return;spinChallenge()};
-$('passQuestion').onclick=()=>{if(!current||!questionReady||busy)return;$('turnStatus').textContent='No worries, spinning a new challenge for '+current+'...';spinChallenge()};
+    <div class="card">
+      <div class="step"><span class="n">2</span><h3 style="margin:0;font-size:14px">Expected hours at bill rates</h3></div>
+      <p class="note" style="font-size:12px;color:var(--text-muted);margin:4px 0 10px">Hours a month x % of their time in the silo = hours. Hours x bill rate = dollars.</p>
+      <div class="scroll"><table class="data-table" id="expTable"></table></div>
+    </div>
 
-// The chosen name is only removed from the wheel once the turn is actually finished,
-// so the wheel never silently reshuffles while a result is still on screen.
-$('nextTurn').onclick=()=>{if(!current||!questionReady||busy)return;completed.add(current);pool=pool.filter(n=>n!==current);current=null;questionReady=false;$('person').textContent=pool.length?'Ready to buzz?':'Everyone participated! 🎉';$('categoryLabel').textContent='Mystery challenge';$('questionResult').textContent='Choose the next teammate!';$('turnStatus').textContent=pool.length?'The hive is ready for another turn.':'Great job, hive! Reset names for another round.';paint()};
+    <div class="card">
+      <div class="step"><span class="n">3</span><h3 style="margin:0;font-size:14px">October hours at bill rates</h3></div>
+      <p class="note" style="font-size:12px;color:var(--text-muted);margin:4px 0 10px">Client-tagged hours each person logged on the silo's clients in October x their bill rate. Anyone who logged time there is counted, even if they aren't allocated to the silo.</p>
+      <div class="scroll"><table class="data-table" id="octTable"></table></div>
+    </div>
 
-function reset(){if(busy)return;pool=[...names];completed.clear();points={};current=null;questionReady=false;spinA=0;spinB=0;$('person').textContent='Ready to buzz?';$('categoryLabel').textContent='Mystery challenge';$('questionResult').textContent='Choose a teammate first!';$('turnStatus').textContent='Everyone gets a chance to share.';paint()}
+    <div class="card">
+      <div class="step"><span class="n">4</span><h3 style="margin:0;font-size:14px">Compare with actual revenue and silo cost</h3></div>
+      <p class="note" style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Silo cost is the October Total Dept Cost from the KPI Tracker: each person's monthly pay x their % in the silo, plus the silo's software and other monthly costs. Profit = revenue minus silo cost.</p>
+      <div class="scroll" style="margin-top:10px"><table class="data-table" id="cmpTable"></table></div>
+      <p class="sentence" id="workSentence"></p>
+    </div>
+  </section>
 
-$('resetNames').onclick=()=>{if(busy)return;if(confirm('Restart name selections and participation tracking?'))reset()};$('resetAll').onclick=()=>{if(busy)return;if(confirm('Restart the entire game and clear all honey points?'))reset()};$('applyNames').onclick=()=>{if(busy)return;const next=[...new Set($('namesEditor').value.split(/\n|,/).map(s=>s.trim()).filter(Boolean))];if(!next.length){alert('Enter at least one name.');return}names=next;reset()};$('fullScreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen?.();else document.documentElement.requestFullscreen?.()};window.addEventListener('keydown',e=>{if(e.code==='Space'&&!['TEXTAREA','INPUT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();if(!current)$('spinName').click();else if(!questionReady)$('spinQuestion').click();else $('nextTurn').click()}});paint();
-</script></body></html>
+  <section id="notes">
+    <h2 class="section-title"><span>How it's worked out</span></h2>
+    <div class="card">
+      <ul style="margin:0;padding-left:1.2em;line-height:1.7;font-size:13px;color:var(--text-secondary)">
+        <li>People and % allocated by silo come from the October 2026 KPI Tracker (Roster &amp; Allocation).</li>
+        <li>Working hours: a 40-hour week is 1,928 hours a year after 9 holidays and 2 weeks of vacation (160.7 a month). A 32-hour week is 1,512 (126 a month). Billable hours are those times the role's target.</li>
+        <li>Daljit counts as a CAM. Mandy, Zee, Michelle and Shilpa keep their own monthly hours.</li>
+        <li>October hours are client-tagged timesheet hours from Payroll Splits 2026, the same hours used in the October KPIs.</li>
+        <li>Actual revenue is the final October silo revenue from the KPI Tracker.</li>
+        <li>Silo cost is the final October Total Dept Cost from the KPI Tracker (pay x % allocated, plus software and other monthly costs). It isn't broken out by person here so individual pay stays private.</li>
+        <li>Profit at October hours value shows what the silo would make if every hour logged were billed at the role rate, minus the same cost.</li>
+        <li>Each person's hours are rounded to one decimal before multiplying, so every total adds up exactly from the rows.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Sum of All Numbers &middot; Revenue by Hours test &middot; built from October 2026 KPI data</footer>
+</div>
+<script>
+const SILOS=[{"silo": "Melissa", "expected_hrs": 876.5, "expected_rev_bill_rate": 130352.0, "actual_hrs_value": 94852.6, "actual_rev_oct": 27559.75, "actual_hrs_oct": 632.81, "client_book": 28131.5, "actual_cost_oct": 14949.93, "lcam_hrs": 89.8, "cam_hrs": 224.9, "clerk_hrs": 561.8}, {"silo": "Shilpa", "expected_hrs": 360.2, "expected_rev_bill_rate": 61707.5, "actual_hrs_value": 49086.45, "actual_rev_oct": 11282.1, "actual_hrs_oct": 264.46, "client_book": 10182.1, "actual_cost_oct": 3217.59, "lcam_hrs": 113.7, "cam_hrs": 93.5, "clerk_hrs": 153}, {"silo": "Liz", "expected_hrs": 416.0, "expected_rev_bill_rate": 80524.0, "actual_hrs_value": 90718.15, "actual_rev_oct": 25952.99, "actual_hrs_oct": 462.74, "client_book": 25593.6, "actual_cost_oct": 7700.1, "lcam_hrs": 88.0, "cam_hrs": 305.2, "clerk_hrs": 22.8}, {"silo": "Becca", "expected_hrs": 475.2, "expected_rev_bill_rate": 91488.5, "actual_hrs_value": 91712.9, "actual_rev_oct": 35300.75, "actual_hrs_oct": 495.34, "client_book": 35384.08, "actual_cost_oct": 15882.72, "lcam_hrs": 138.7, "cam_hrs": 284.3, "clerk_hrs": 52.2}, {"silo": "Vikas", "expected_hrs": 181.9, "expected_rev_bill_rate": 26833.0, "actual_hrs_value": 23943.5, "actual_rev_oct": 10652.5, "actual_hrs_oct": 144.48, "client_book": 10652.5, "actual_cost_oct": 1670.43, "lcam_hrs": 35.6, "cam_hrs": 18.1, "clerk_hrs": 128.2}, {"silo": "Michelle", "expected_hrs": 193.0, "expected_rev_bill_rate": 27360.0, "actual_hrs_value": 22803.15, "actual_rev_oct": 16586, "actual_hrs_oct": 148.7, "client_book": 16798, "actual_cost_oct": 10573, "lcam_hrs": 40.0, "cam_hrs": 0, "clerk_hrs": 153}, {"silo": "Simplified Team", "expected_hrs": 21.3, "expected_rev_bill_rate": 4792.5, "actual_hrs_value": 5532.3, "actual_rev_oct": 0, "actual_hrs_oct": 39.05, "client_book": 885, "actual_cost_oct": 213.65, "lcam_hrs": 21.3, "cam_hrs": 0, "clerk_hrs": 0.0}];
+const PEOPLE=[{"silo": "Melissa", "person": "Melissa", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 1, "expected_hrs": 88, "bill_rate": 225, "expected_value": 19800, "oct_hrs": 84.84, "oct_value": 19089.0}, {"silo": "Melissa", "person": "Vikas", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 0.02, "expected_hrs": 1.8, "bill_rate": 225, "expected_value": 405.0, "oct_hrs": 2.52, "oct_value": 567.0}, {"silo": "Melissa", "person": "Mandy", "role": "CAM", "hrs_month": 128, "pct_in_silo": 0.341, "expected_hrs": 43.6, "bill_rate": 190, "expected_value": 8284.0, "oct_hrs": 20.76, "oct_value": 3944.4}, {"silo": "Melissa", "person": "Daljit", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.355, "expected_hrs": 51.5, "bill_rate": 190, "expected_value": 9785.0, "oct_hrs": 14.79, "oct_value": 2810.1}, {"silo": "Melissa", "person": "Bhavika", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 1, "expected_hrs": 153, "bill_rate": 120, "expected_value": 18360, "oct_hrs": 140.46, "oct_value": 16855.2}, {"silo": "Melissa", "person": "Jobin", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.895, "expected_hrs": 129.8, "bill_rate": 190, "expected_value": 24662.0, "oct_hrs": 85.06, "oct_value": 16161.4}, {"silo": "Melissa", "person": "Parita", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.851, "expected_hrs": 130.2, "bill_rate": 120, "expected_value": 15624.0, "oct_hrs": 59.27, "oct_value": 7112.4}, {"silo": "Melissa", "person": "Ayushi", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 1, "expected_hrs": 153, "bill_rate": 120, "expected_value": 18360, "oct_hrs": 80.44, "oct_value": 9652.8}, {"silo": "Melissa", "person": "Lavin", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.821, "expected_hrs": 125.6, "bill_rate": 120, "expected_value": 15072.0, "oct_hrs": 67.61, "oct_value": 8113.2}, {"silo": "Melissa", "person": "Bhanu", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 55.07, "oct_value": 6608.4}, {"silo": "Melissa", "person": "Parth", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 9.61, "oct_value": 1153.2}, {"silo": "Melissa", "person": "Shilpa", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 8.27, "oct_value": 1860.75}, {"silo": "Melissa", "person": "Michelle", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 3, "oct_value": 675}, {"silo": "Melissa", "person": "Becca", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 1.11, "oct_value": 249.75}, {"silo": "Shilpa", "person": "Shilpa", "role": "LCAM", "hrs_month": 135, "pct_in_silo": 0.842, "expected_hrs": 113.7, "bill_rate": 225, "expected_value": 25582.5, "oct_hrs": 73.49, "oct_value": 16535.25}, {"silo": "Shilpa", "person": "Daljit", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.645, "expected_hrs": 93.5, "bill_rate": 190, "expected_value": 17765.0, "oct_hrs": 125.33, "oct_value": 23812.7}, {"silo": "Shilpa", "person": "Bhanu", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 1, "expected_hrs": 153, "bill_rate": 120, "expected_value": 18360, "oct_hrs": 56.35, "oct_value": 6762.0}, {"silo": "Shilpa", "person": "Michelle", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 4, "oct_value": 900}, {"silo": "Shilpa", "person": "Mandy", "role": "CAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 190, "expected_value": 0.0, "oct_hrs": 3.25, "oct_value": 617.5}, {"silo": "Shilpa", "person": "Melissa", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 2.04, "oct_value": 459.0}, {"silo": "Liz", "person": "Liz", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 1, "expected_hrs": 88, "bill_rate": 225, "expected_value": 19800, "oct_hrs": 103.56, "oct_value": 23301.0}, {"silo": "Liz", "person": "Vikrant", "role": "CAM", "hrs_month": 145, "pct_in_silo": 1, "expected_hrs": 145, "bill_rate": 190, "expected_value": 27550, "oct_hrs": 183.92, "oct_value": 34944.8}, {"silo": "Liz", "person": "Satwinder", "role": "CAM", "hrs_month": 145, "pct_in_silo": 1, "expected_hrs": 145, "bill_rate": 190, "expected_value": 27550, "oct_hrs": 116.34, "oct_value": 22104.6}, {"silo": "Liz", "person": "Jobin", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.105, "expected_hrs": 15.2, "bill_rate": 190, "expected_value": 2888.0, "oct_hrs": 28.83, "oct_value": 5477.7}, {"silo": "Liz", "person": "Parita", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.149, "expected_hrs": 22.8, "bill_rate": 120, "expected_value": 2736.0, "oct_hrs": 17.49, "oct_value": 2098.8}, {"silo": "Liz", "person": "Melissa", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 8.52, "oct_value": 1917.0}, {"silo": "Liz", "person": "Michelle", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 2.83, "oct_value": 636.75}, {"silo": "Liz", "person": "Mandy", "role": "CAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 190, "expected_value": 0.0, "oct_hrs": 1.25, "oct_value": 237.5}, {"silo": "Becca", "person": "Becca", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 1, "expected_hrs": 88, "bill_rate": 225, "expected_value": 19800, "oct_hrs": 92.09, "oct_value": 20720.25}, {"silo": "Becca", "person": "Vikas", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 0.576, "expected_hrs": 50.7, "bill_rate": 225, "expected_value": 11407.5, "oct_hrs": 75.79, "oct_value": 17052.75}, {"silo": "Becca", "person": "Zee", "role": "CAM", "hrs_month": 73, "pct_in_silo": 1, "expected_hrs": 73, "bill_rate": 190, "expected_value": 13870, "oct_hrs": 53.64, "oct_value": 10191.6}, {"silo": "Becca", "person": "Shivanshi", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.875, "expected_hrs": 126.9, "bill_rate": 190, "expected_value": 24111.0, "oct_hrs": 106.31, "oct_value": 20198.9}, {"silo": "Becca", "person": "Deepak", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.179, "expected_hrs": 27.4, "bill_rate": 120, "expected_value": 3288.0, "oct_hrs": 90.7, "oct_value": 10884.0}, {"silo": "Becca", "person": "Mandy", "role": "CAM", "hrs_month": 128, "pct_in_silo": 0.659, "expected_hrs": 84.4, "bill_rate": 190, "expected_value": 16036.0, "oct_hrs": 46.26, "oct_value": 8789.4}, {"silo": "Becca", "person": "Lavin", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.162, "expected_hrs": 24.8, "bill_rate": 120, "expected_value": 2976.0, "oct_hrs": 13.31, "oct_value": 1597.2}, {"silo": "Becca", "person": "Parth", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 12.4, "oct_value": 1488.0}, {"silo": "Becca", "person": "Ayushi", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 2.84, "oct_value": 340.8}, {"silo": "Becca", "person": "Michelle", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 2, "oct_value": 450}, {"silo": "Becca", "person": "Andrea", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 0, "oct_value": 0}, {"silo": "Vikas", "person": "Vikas", "role": "LCAM", "hrs_month": 88, "pct_in_silo": 0.404, "expected_hrs": 35.6, "bill_rate": 225, "expected_value": 8010.0, "oct_hrs": 33.08, "oct_value": 7443.0}, {"silo": "Vikas", "person": "Shivanshi", "role": "CAM", "hrs_month": 145, "pct_in_silo": 0.125, "expected_hrs": 18.1, "bill_rate": 190, "expected_value": 3439.0, "oct_hrs": 35.75, "oct_value": 6792.5}, {"silo": "Vikas", "person": "Deepak", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.821, "expected_hrs": 125.6, "bill_rate": 120, "expected_value": 15072.0, "oct_hrs": 46.62, "oct_value": 5594.4}, {"silo": "Vikas", "person": "Lavin", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 0.017, "expected_hrs": 2.6, "bill_rate": 120, "expected_value": 312.0, "oct_hrs": 1.42, "oct_value": 170.4}, {"silo": "Vikas", "person": "Bhavika", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 15.02, "oct_value": 1802.4}, {"silo": "Vikas", "person": "Ayushi", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 6.59, "oct_value": 790.8}, {"silo": "Vikas", "person": "Michelle", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 6, "oct_value": 1350}, {"silo": "Michelle", "person": "Michelle", "role": "LCAM", "hrs_month": 40, "pct_in_silo": 1, "expected_hrs": 40, "bill_rate": 225, "expected_value": 9000, "oct_hrs": 41, "oct_value": 9225}, {"silo": "Michelle", "person": "Parth", "role": "Clerk", "hrs_month": 153, "pct_in_silo": 1, "expected_hrs": 153, "bill_rate": 120, "expected_value": 18360, "oct_hrs": 101.47, "oct_value": 12176.4}, {"silo": "Michelle", "person": "Melissa", "role": "LCAM", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 225, "expected_value": 0.0, "oct_hrs": 6.23, "oct_value": 1401.75}, {"silo": "Simplified Team", "person": "Shilpa", "role": "LCAM", "hrs_month": 135, "pct_in_silo": 0.158, "expected_hrs": 21.3, "bill_rate": 225, "expected_value": 4792.5, "oct_hrs": 8.06, "oct_value": 1813.5}, {"silo": "Simplified Team", "person": "Bhanu", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 28.08, "oct_value": 3369.6}, {"silo": "Simplified Team", "person": "Parth", "role": "Clerk", "hrs_month": null, "pct_in_silo": 0, "expected_hrs": 0.0, "bill_rate": 120, "expected_value": 0.0, "oct_hrs": 2.91, "oct_value": 349.2}];
+const ORDER = ['Melissa', 'Shilpa', 'Liz', 'Becca', 'Vikas', 'Michelle', 'Simplified Team'];
+const ROLE = {Melissa: 'LCAM', Shilpa: 'LCAM', Liz: 'LCAM', Becca: 'LCAM', Vikas: 'LCAM', Michelle: 'LCAM', 'Simplified Team': 'Team'};
+const colorVar = (s) => 'var(--s-' + (s === 'Simplified Team' ? 'Simplified' : s) + ')';
+const money = (v) => '$' + Math.round(+v || 0).toLocaleString('en-US');
+const hrs = (v) => (+v || 0).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const pct = (v) => isFinite(v) ? Math.round(v * 100) + '%' : '-';
+const sum = (rows, k) => rows.reduce((a, r) => a + (+r[k] || 0), 0);
+const el = (tag, attrs = {}, kids = []) => { const e = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => k === 'text' ? e.textContent = v : k === 'class' ? e.className = v : e.setAttribute(k, v)); kids.forEach((c) => e.appendChild(c)); return e; };
+const svgEl = (tag, attrs = {}) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v)); return e; };
+const SIL = ORDER.map((n) => SILOS.find((r) => r.silo === n));
+const TOT = {expected_rev_bill_rate: sum(SIL, 'expected_rev_bill_rate'), actual_hrs_value: sum(SIL, 'actual_hrs_value'), actual_rev_oct: sum(SIL, 'actual_rev_oct'), expected_hrs: sum(SIL, 'expected_hrs'), actual_hrs_oct: sum(SIL, 'actual_hrs_oct'), client_book: sum(SIL, 'client_book'), actual_cost_oct: sum(SIL, 'actual_cost_oct')};
+
+function ring(p, color) {
+  const s = svgEl('svg', {width: 52, height: 52, viewBox: '0 0 52 52', role: 'img', 'aria-label': pct(p) + ' of October hours value billed'});
+  s.appendChild(svgEl('circle', {cx: 26, cy: 26, r: 21, fill: 'none', stroke: 'var(--gridline)', 'stroke-width': 6}));
+  const C = 2 * Math.PI * 21, f = Math.max(0, Math.min(1, p || 0));
+  s.appendChild(svgEl('circle', {cx: 26, cy: 26, r: 21, fill: 'none', stroke: color, 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': `${C * f} ${C}`, transform: 'rotate(-90 26 26)'}));
+  const t = svgEl('text', {x: 26, y: 30, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: 'var(--text-primary)'}); t.textContent = pct(p); s.appendChild(t);
+  return s;
+}
+
+function buildCards() {
+  const g = document.getElementById('cards');
+  const mk = (name, r, isTotal) => {
+    const b = el('button', {class: 'silo-card' + (isTotal ? ' total-card' : ''), type: 'button', 'aria-label': 'Show the work for ' + name});
+    const nm = el('div', {class: 'name'}, [el('span', {class: 'dot'}), el('span', {text: name})]);
+    nm.firstChild.style.background = isTotal ? 'var(--brand-purple)' : colorVar(name);
+    b.appendChild(nm);
+    b.appendChild(el('div', {class: 'role', text: isTotal ? 'All silos' : (ROLE[name] === 'Team' ? 'Team silo' : 'LCAM silo')}));
+    const gr = el('div', {class: 'gauge-row'});
+    gr.appendChild(ring(r.actual_rev_oct / r.actual_hrs_value, isTotal ? 'var(--brand-purple)' : colorVar(name)));
+    gr.appendChild(el('div', {class: 'gtext', text: 'of Oct hours value actually billed'}));
+    b.appendChild(gr);
+    const rev = el('div', {class: 'rev'});
+    [['Expected hrs value', r.expected_rev_bill_rate], ['Oct hrs value', r.actual_hrs_value], ['Actual revenue', r.actual_rev_oct], ['Silo cost', r.actual_cost_oct], ['Profit', r.actual_rev_oct - r.actual_cost_oct]].forEach(([l, v]) => { const d = el('div'); d.appendChild(document.createTextNode(l + ' ')); d.appendChild(el('b', {text: money(v)})); rev.appendChild(d); });
+    b.appendChild(rev);
+    b.addEventListener('click', () => { setWork(isTotal ? 'All' : name); document.getElementById('work').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); });
+    return b;
+  };
+  g.appendChild(mk('All silos', TOT, true));
+  SIL.forEach((r) => g.appendChild(mk(r.silo, r, false)));
+}
+
+function buildTiles() {
+  const t = document.getElementById('tiles');
+  const tile = (label, value, delta) => el('div', {class: 'tile'}, [el('div', {class: 'label', text: label}), el('div', {class: 'value', text: value}), el('div', {class: 'delta', text: delta})]);
+  t.appendChild(tile('Expected hours at bill rates', money(TOT.expected_rev_bill_rate), hrs(TOT.expected_hrs) + ' expected billable hours'));
+  t.appendChild(tile('October hours at bill rates', money(TOT.actual_hrs_value), hrs(TOT.actual_hrs_oct) + ' hours logged in October'));
+  t.appendChild(tile('Actual October revenue', money(TOT.actual_rev_oct), 'Client book ' + money(TOT.client_book)));
+  t.appendChild(tile('Silo cost', money(TOT.actual_cost_oct), 'Profit ' + money(TOT.actual_rev_oct - TOT.actual_cost_oct) + ' (' + pct((TOT.actual_rev_oct - TOT.actual_cost_oct) / TOT.actual_rev_oct) + ' margin)'));
+  t.appendChild(tile('Billed vs hours value', pct(TOT.actual_rev_oct / TOT.actual_hrs_value), pct(TOT.actual_rev_oct / TOT.expected_rev_bill_rate) + ' of expected hours value'));
+}
+
+function buildChart() {
+  const box = document.getElementById('barChart');
+  box.replaceChildren();
+  const W = Math.max(320, box.clientWidth || 800), narrow = W < 560;
+  const series = [['expected_rev_bill_rate', 'Expected hours at bill rates', 'var(--m-exp)'], ['actual_hrs_value', 'October hours at bill rates', 'var(--m-oct)'], ['actual_rev_oct', 'Actual October revenue', 'var(--m-act)'], ['actual_cost_oct', 'Silo cost', 'var(--m-cost)']];
+  const L = narrow ? 96 : 120, R = 58, T = 6, B = 26, bar = 11, gap = 3, groupGap = 16;
+  const gh = series.length * (bar + gap) - gap;
+  const H = T + B + SIL.length * (gh + groupGap);
+  const max = Math.max(...SIL.flatMap((r) => series.map(([k]) => +r[k])));
+  const step = max > 100000 ? 20000 : 10000, top = Math.ceil(max / step) * step;
+  const x = (v) => L + (W - L - R) * (v / top);
+  const s = svgEl('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Bars for each silo comparing expected hours at bill rates, October hours at bill rates, actual October revenue and silo cost'});
+  const ticks = narrow ? 4 : 7;
+  for (let i = 0; i <= ticks; i++) {
+    const v = top * i / ticks, xx = x(v);
+    s.appendChild(svgEl('line', {x1: xx, x2: xx, y1: T, y2: H - B, class: 'grid-line'}));
+    const lab = svgEl('text', {x: xx, y: H - 8, 'text-anchor': 'middle', class: 'axis-label'}); lab.textContent = '$' + Math.round(v / 1000) + 'k'; s.appendChild(lab);
+  }
+  const tip = el('div', {class: 'tooltip'}); tip.hidden = true; box.appendChild(tip);
+  SIL.forEach((r, i) => {
+    const y0 = T + i * (gh + groupGap) + groupGap / 2;
+    const c = svgEl('text', {x: L - 8, y: y0 + gh / 2 + 4, 'text-anchor': 'end', class: 'cat-label'}); c.textContent = r.silo; s.appendChild(c);
+    series.forEach(([k, label, col], j) => {
+      const y = y0 + j * (bar + gap);
+      const rc = svgEl('rect', {x: L, y, width: Math.max(1, x(+r[k]) - L), height: bar, rx: 2, fill: col, tabindex: 0});
+      const show = (ev) => {
+        tip.replaceChildren(el('b', {text: r.silo}), el('span', {text: label + ': ' + money(r[k])}));
+        tip.hidden = false;
+        const bb = box.getBoundingClientRect();
+        const px = ev && ev.clientX ? ev.clientX - bb.left : x(+r[k]) * bb.width / W;
+        const py = ev && ev.clientY ? ev.clientY - bb.top : y * bb.height / H;
+        tip.style.left = Math.min(px + 12, bb.width - 190) + 'px'; tip.style.top = (py + 12) + 'px';
+      };
+      rc.addEventListener('pointermove', show); rc.addEventListener('focus', () => show(null));
+      rc.addEventListener('pointerleave', () => { tip.hidden = true; }); rc.addEventListener('blur', () => { tip.hidden = true; });
+      s.appendChild(rc);
+      const t = svgEl('text', {x: x(+r[k]) + 5, y: y + bar - 2, class: 'bar-label'}); t.textContent = '$' + (Math.round(+r[k] / 100) / 10) + 'k'; s.appendChild(t);
+    });
+  });
+  box.insertBefore(s, tip);
+  const tot = document.getElementById('chartTotal'); tot.replaceChildren();
+  [['Expected hours at bill rates ', TOT.expected_rev_bill_rate], [' · October hours at bill rates ', TOT.actual_hrs_value], [' · Actual revenue ', TOT.actual_rev_oct], [' · Silo cost ', TOT.actual_cost_oct]].forEach(([l, v], i) => { tot.appendChild(document.createTextNode((i === 0 ? 'All silos: ' : '') + l)); tot.appendChild(el('b', {text: money(v)})); });
+}
+
+let current = 'All';
+function buildWorkTabs() {
+  const g = document.getElementById('workTabs');
+  ['All', ...ORDER].forEach((n) => {
+    const b = el('button', {class: 'view-tab', type: 'button', 'data-silo': n, 'aria-pressed': 'false'});
+    if (n !== 'All') { const d = el('span', {class: 'dot'}); d.style.background = colorVar(n); b.appendChild(d); }
+    b.appendChild(document.createTextNode(n === 'All' ? 'Whole company' : n));
+    b.addEventListener('click', () => setWork(n));
+    g.appendChild(b);
+  });
+}
+function table(id, head, rows, total) {
+  const t = document.getElementById(id); t.replaceChildren();
+  const th = el('thead'); const hr = el('tr');
+  head.forEach(([h, num]) => hr.appendChild(el('th', {class: num ? 'num' : '', text: h}))); th.appendChild(hr); t.appendChild(th);
+  const tb = el('tbody');
+  rows.forEach((r) => { const tr = el('tr'); r.forEach((v, i) => tr.appendChild(el('td', {class: (head[i][1] ? 'num' : '') + (head[i][2] ? ' math' : ''), text: v}))); tb.appendChild(tr); });
+  if (total) { const tr = el('tr', {class: 'total-row'}); total.forEach((v, i) => tr.appendChild(el('td', {class: head[i][1] ? 'num' : '', text: v}))); tb.appendChild(tr); }
+  t.appendChild(tb);
+}
+function setWork(n) {
+  current = n;
+  document.querySelectorAll('#workTabs .view-tab').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.silo === n)));
+  const all = n === 'All';
+  document.getElementById('workSub').textContent = all ? 'Whole company, every silo' : n + "'s silo";
+  const P = PEOPLE.filter((r) => all || r.silo === n);
+  const siloCol = all ? [['Silo']] : [];
+  const sc = (r) => all ? [r.silo] : [];
+  const E = P.filter((r) => +r.expected_hrs > 0);
+  table('expTable', [...siloCol, ['Person'], ['Role'], ['Hrs / mo', 1], ['% in silo', 1], ['Hours', 1], ['Rate', 1], ['Math', 1, 1], ['$', 1]],
+    E.map((r) => [...sc(r), r.person, r.role, r.hrs_month, (r.pct_in_silo * 100).toFixed(1) + '%', hrs(r.expected_hrs), '$' + r.bill_rate, `${r.hrs_month} x ${(r.pct_in_silo * 100).toFixed(1)}% x $${r.bill_rate}`, money(r.expected_value)]),
+    [...(all ? ['Total'] : []), all ? '' : 'Total', '', '', '', hrs(sum(E, 'expected_hrs')), '', '', money(sum(E, 'expected_value'))]);
+  const O = P.filter((r) => +r.oct_hrs > 0).sort((a, b) => a.silo === b.silo ? b.oct_hrs - a.oct_hrs : ORDER.indexOf(a.silo) - ORDER.indexOf(b.silo));
+  table('octTable', [...siloCol, ['Person'], ['Role'], ['Oct hours', 1], ['Rate', 1], ['Math', 1, 1], ['$', 1]],
+    O.map((r) => [...sc(r), r.person, r.role, hrs(r.oct_hrs), '$' + r.bill_rate, `${hrs(r.oct_hrs)} x $${r.bill_rate}`, money(r.oct_value)]),
+    [...(all ? ['Total'] : []), all ? '' : 'Total', '', hrs(sum(O, 'oct_hrs')), '', '', money(sum(O, 'oct_value'))]);
+  const S = all ? SIL : SIL.filter((r) => r.silo === n);
+  const t = all ? TOT : S[0];
+  const prof = (r) => r.actual_rev_oct - r.actual_cost_oct, profH = (r) => r.actual_hrs_value - r.actual_cost_oct;
+  const cmpRow = (r, name) => [name, money(r.expected_rev_bill_rate), money(r.actual_hrs_value), money(r.actual_rev_oct), money(r.actual_cost_oct), money(prof(r)), pct(prof(r) / r.actual_rev_oct), money(profH(r)), pct(r.actual_rev_oct / r.actual_hrs_value)];
+  table('cmpTable', [['Silo'], ['Expected hrs at bill rates', 1], ['Oct hrs at bill rates', 1], ['Actual Oct revenue', 1], ['Silo cost', 1], ['Profit (actual)', 1], ['Margin', 1], ['Profit at Oct hrs value', 1], ['Actual / Oct hrs', 1]],
+    S.map((r) => cmpRow(r, r.silo)), all ? cmpRow(TOT, 'Whole company') : null);
+  const sEl = document.getElementById('workSentence'); sEl.replaceChildren();
+  const parts = [[all ? 'The whole company' : n + "'s silo", null], [' brought in ', null], [money(t.actual_rev_oct), 1], [' in October. That is ', null], [pct(t.actual_rev_oct / t.expected_rev_bill_rate), 1], [' of what its expected hours are worth at bill rates (', null], [money(t.expected_rev_bill_rate), 1], [') and ', null], [pct(t.actual_rev_oct / t.actual_hrs_value), 1], [' of what its October hours are worth (', null], [money(t.actual_hrs_value), 1], ['). It cost ', null], [money(t.actual_cost_oct), 1], [', leaving ', null], [money(t.actual_rev_oct - t.actual_cost_oct), 1], [' profit on actual revenue, or ', null], [money(t.actual_hrs_value - t.actual_cost_oct), 1], [' if its October hours had been billed at full rate.', null]];
+  parts.forEach(([txt, b]) => sEl.appendChild(b ? el('b', {text: txt}) : document.createTextNode(txt)));
+}
+
+const root = document.documentElement;
+const tbtn = document.getElementById('themeToggle');
+const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+const label = () => { tbtn.textContent = isDark() ? 'Light mode' : 'Dark mode'; };
+tbtn.addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; label(); });
+label();
+
+buildCards(); buildTiles(); buildWorkTabs(); setWork('All'); buildChart();
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(buildChart, 120); });
+</script>
+
+</body></html>
